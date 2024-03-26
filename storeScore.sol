@@ -8,10 +8,10 @@ contract storeScore is Ownable(msg.sender) {
 
 	struct Match {
 		uint matchId;
+		uint8 player1Score;
+		uint8 player2Score;
 		string player1Name;
 		string player2Name;
-		uint player1Score;
-		uint player2Score;
 		string winner;
 	}
 
@@ -19,10 +19,10 @@ contract storeScore is Ownable(msg.sender) {
 	mapping(string => uint[]) private playerMatch;
 	mapping(uint => Match) private match_map;
 
-	function addMatch(uint r_matchId, uint tournamentId, string memory player1Name, string memory player2Name, uint player1Score, uint player2Score, string memory winner) external onlyOwner {
+	function addMatch(uint r_matchId, uint tournamentId, string memory player1Name, string memory player2Name, uint8 player1Score, uint8 player2Score, string memory winner) external onlyOwner {
 		require(match_map[r_matchId].matchId == 0, "This match already exist");
 		
-		Match memory newMatch = Match(r_matchId, player1Name, player2Name, player1Score, player2Score, winner);
+		Match memory newMatch = Match(r_matchId, player1Score, player2Score, player1Name, player2Name, winner);
 		match_map[r_matchId] = newMatch;
 		playerMatch[player1Name].push(r_matchId);
 		playerMatch[player2Name].push(r_matchId);
