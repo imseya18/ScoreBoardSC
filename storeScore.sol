@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.19;
 
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -19,7 +19,23 @@ contract storeScore is Ownable(msg.sender) {
 	mapping(string => uint[]) private playerMatch;
 	mapping(uint => Match) private match_map;
 
-	function addMatch(uint r_matchId, uint tournamentId, string memory player1Name, string memory player2Name, uint8 player1Score, uint8 player2Score, string memory winner) external onlyOwner {
+	function addTournamentByCallingFonction(uint[] memory r_matchId, uint tournamentId, string[] memory player1Name, string[] memory player2Name, uint8[] memory player1Score, uint8[] memory player2Score, string[] memory winner) external onlyOwner {
+		for(uint i; i < r_matchId.length; i++) {
+			addMatch(r_matchId[i], tournamentId, player1Name[i], player2Name[i], player1Score[i], player2Score[i], winner[i]);
+		}
+	}
+
+	function addTournament(uint[] memory r_matchId, uint tournamentId, string[] memory player1Name, string[] memory player2Name, uint8[] memory player1Score, uint8[] memory player2Score, string[] memory winner) external onlyOwner {		
+		for(uint i; i < r_matchId.length; i++) {
+			Match memory newMatch = Match(r_matchId[i], player1Score[i], player2Score[i], player1Name[i], player2Name[i], winner[i]);
+			match_map[r_matchId[i]] = newMatch;
+			playerMatch[player1Name[i]].push(r_matchId[i]);
+			playerMatch[player2Name[i]].push(r_matchId[i]);
+			if(tournamentId != 0)
+				tournament[tournamentId].push(r_matchId[i]);
+		}
+	}
+	function addMatch(uint r_matchId, uint tournamentId, string memory player1Name, string memory player2Name, uint8 player1Score, uint8 player2Score, string memory winner) public onlyOwner {
 		require(match_map[r_matchId].matchId == 0, "This match already exist");
 		
 		Match memory newMatch = Match(r_matchId, player1Score, player2Score, player1Name, player2Name, winner);
