@@ -10,8 +10,8 @@ contract storeScore is Ownable(msg.sender) {
 		uint matchId;
 		uint8 player1Score;
 		uint8 player2Score;
-		string player1Name;
-		string player2Name;
+		string player1Id;
+		string player2Id;
 		string winner;
 	}
 
@@ -19,59 +19,48 @@ contract storeScore is Ownable(msg.sender) {
 	mapping(string => uint[]) private playerMatch;
 	mapping(uint => Match) private match_map;
 
-	function addTournamentByCallingFonction(uint[] memory r_matchId, uint tournamentId, string[] memory player1Name, string[] memory player2Name, uint8[] memory player1Score, uint8[] memory player2Score, string[] memory winner) external onlyOwner {
-		for(uint i; i < r_matchId.length; i++) {
-			addMatch(r_matchId[i], tournamentId, player1Name[i], player2Name[i], player1Score[i], player2Score[i], winner[i]);
+	function addTournament(uint[] memory _r_matchId, uint _tournamentId, uint8[] memory _player1Score, uint8[] memory _player2Score, string[] memory _player1Id, string[] memory _player2Id, string[] memory _winner) external onlyOwner {
+		for(uint i = 0; i < _r_matchId.length; i++) {
+			addMatch(_r_matchId[i], _tournamentId, _player1Score[i], _player2Score[i],_player1Id[i], _player2Id[i],_winner[i]);
 		}
 	}
 
-	function addTournament(uint[] memory r_matchId, uint tournamentId, string[] memory player1Name, string[] memory player2Name, uint8[] memory player1Score, uint8[] memory player2Score, string[] memory winner) external onlyOwner {		
-		for(uint i; i < r_matchId.length; i++) {
-			Match memory newMatch = Match(r_matchId[i], player1Score[i], player2Score[i], player1Name[i], player2Name[i], winner[i]);
-			match_map[r_matchId[i]] = newMatch;
-			playerMatch[player1Name[i]].push(r_matchId[i]);
-			playerMatch[player2Name[i]].push(r_matchId[i]);
-			if(tournamentId != 0)
-				tournament[tournamentId].push(r_matchId[i]);
-		}
-	}
-	function addMatch(uint r_matchId, uint tournamentId, string memory player1Name, string memory player2Name, uint8 player1Score, uint8 player2Score, string memory winner) public onlyOwner {
-		require(match_map[r_matchId].matchId == 0, "This match already exist");
+	function addMatch(uint _r_matchId, uint _tournamentId,  uint8 _player1Score, uint8 _player2Score, string memory _player1Id, string memory _player2Id, string memory _winner) public onlyOwner {
+		require(match_map[_r_matchId].matchId == 0, "This match already exist");
 		
-		Match memory newMatch = Match(r_matchId, player1Score, player2Score, player1Name, player2Name, winner);
-		match_map[r_matchId] = newMatch;
-		playerMatch[player1Name].push(r_matchId);
-		playerMatch[player2Name].push(r_matchId);
-		if(tournamentId != 0)
-			tournament[tournamentId].push(r_matchId);
+		Match memory newMatch = Match(_r_matchId, _player1Score, _player2Score, _player1Id, _player2Id, _winner);
+		match_map[_r_matchId] = newMatch;
+		playerMatch[_player1Id].push(_r_matchId);
+		playerMatch[_player2Id].push(_r_matchId);
+		if(_tournamentId != 0)
+			tournament[_tournamentId].push(_r_matchId);
 	}
 
-	function getTournament(uint tournamentId) external view returns (Match[] memory) {
-		require(tournament[tournamentId].length > 0, "No tournamenet found for this ID");
+	function getTournament(uint _tournamentId) external view returns (Match[] memory) {
+		require(tournament[_tournamentId].length > 0, "No tournamenet found for this ID");
 
-		Match[] memory tournamentMatchs = new Match[](tournament[tournamentId].length);
-		for(uint i = 0; i < tournament[tournamentId].length; i++) {
-			tournamentMatchs[i]= match_map[tournament[tournamentId][i]];
+		Match[] memory tournamentMatchs = new Match[](tournament[_tournamentId].length);
+		for(uint i = 0; i < tournament[_tournamentId].length; i++) {
+			tournamentMatchs[i]= match_map[tournament[_tournamentId][i]];
 		}
 
 		return (tournamentMatchs);
 	}
 
-	function getPlayerMatchs(string memory playerName) external view returns (Match[] memory) {
-		require(playerMatch[playerName].length > 0, "No match found for this player");
+	function getPlayerMatchs(string memory _playerName) external view returns (Match[] memory) {
+		require(playerMatch[_playerName].length > 0, "No match found for this player");
 
-		Match[] memory playerNameMatchs = new Match[](playerMatch[playerName].length);
-		for(uint i = 0; i < playerMatch[playerName].length; i++) {
-			playerNameMatchs[i] = match_map[playerMatch[playerName][i]];
+		Match[] memory playerNameMatchs = new Match[](playerMatch[_playerName].length);
+		for(uint i = 0; i < playerMatch[_playerName].length; i++) {
+			playerNameMatchs[i] = match_map[playerMatch[_playerName][i]];
 		}
 
 		return (playerNameMatchs);
 	}
 
-	function getMatchById(uint r_matchId) external view returns (Match memory) {
-		require(match_map[r_matchId].matchId != 0, "This match doesn't exist");
+	function getMatchById(uint _r_matchId) external view returns (Match memory) {
+		require(match_map[_r_matchId].matchId != 0, "This match doesn't exist");
 
-		return (match_map[r_matchId]);
+		return (match_map[_r_matchId]);
 	}
 }
-
