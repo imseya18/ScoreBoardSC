@@ -20,6 +20,7 @@ contract storeScore is Ownable(msg.sender) {
 	mapping(uint => Match) private match_map;
 
 	function addTournament(uint[] memory _r_matchId, uint _tournamentId, uint8[] memory _player1Score, uint8[] memory _player2Score, string[] memory _player1Id, string[] memory _player2Id, string[] memory _winner) external onlyOwner {
+		require(tournament[_tournamentId].length == 0, "This tournamenet already exist");
 		for(uint i = 0; i < _r_matchId.length; i++) {
 			addMatch(_r_matchId[i], _tournamentId, _player1Score[i], _player2Score[i],_player1Id[i], _player2Id[i],_winner[i]);
 		}
