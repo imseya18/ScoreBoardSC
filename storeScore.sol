@@ -3,33 +3,36 @@ pragma solidity ^0.8.19;
 
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
 
 contract storeScore is Ownable(msg.sender) {
 
 	struct Match {
-		uint matchId;
+		uint64 matchId;
+		uint64 timestamp;
+		uint64 player1Id;
+		uint64 player2Id;
+		uint64 winner;
 		uint8 player1Score;
 		uint8 player2Score;
-		string player1Id;
-		string player2Id;
-		string winner;
 	}
 
-	mapping(uint => uint[]) private tournament;
-	mapping(string => uint[]) private playerMatch;
-	mapping(uint => Match) private match_map;
+	mapping(uint64 => uint64[]) private tournament;
+	mapping(uint64 => uint64[]) private playerMatch;
+	mapping(uint64 => Match) private match_map;
 
-	function addTournament(uint[] memory _r_matchId, uint _tournamentId, uint8[] memory _player1Score, uint8[] memory _player2Score, string[] memory _player1Id, string[] memory _player2Id, string[] memory _winner) external onlyOwner {
-		require(tournament[_tournamentId].length == 0, "This tournamenet already exist");
+	function addTournament(uint64[] memory _r_matchId, uint64 _tournamentId, uint64[] memory _timestamp, uint8[] memory _player1Score, uint8[] memory _player2Score, uint64[] memory _player1Id, uint64[] memory _player2Id, uint64[] memory _winner) external onlyOwner {
+		require(tournament[_tournamentId].length == 0, string(abi.encodePacked("This tournament already exists: ", Strings.toString(_tournamentId))));
 		for(uint i = 0; i < _r_matchId.length; i++) {
-			addMatch(_r_matchId[i], _tournamentId, _player1Score[i], _player2Score[i],_player1Id[i], _player2Id[i],_winner[i]);
+			addMatch(_r_matchId[i], _tournamentId, _timestamp[i],_player1Score[i], _player2Score[i],_player1Id[i], _player2Id[i],_winner[i]);
 		}
 	}
 
-	function addMatch(uint _r_matchId, uint _tournamentId,  uint8 _player1Score, uint8 _player2Score, string memory _player1Id, string memory _player2Id, string memory _winner) public onlyOwner {
-		require(match_map[_r_matchId].matchId == 0, "This match already exist");
+	function addMatch(uint64 _r_matchId, uint64 _tournamentId, uint64 _timestamp, uint8 _player1Score, uint8 _player2Score, uint64 _player1Id, uint64 _player2Id, uint64 _winner) public onlyOwner {
+		require(match_map[_r_matchId].matchId == 0, string(abi.encodePacked("This match already exists: ", Strings.toString(_r_matchId))));
 		
-		Match memory newMatch = Match(_r_matchId, _player1Score, _player2Score, _player1Id, _player2Id, _winner);
+		Match memory newMatch = Match(_r_matchId, _timestamp, _player1Id, _player2Id, _winner, _player1Score, _player2Score);
 		match_map[_r_matchId] = newMatch;
 		playerMatch[_player1Id].push(_r_matchId);
 		playerMatch[_player2Id].push(_r_matchId);
@@ -37,19 +40,18 @@ contract storeScore is Ownable(msg.sender) {
 			tournament[_tournamentId].push(_r_matchId);
 	}
 
-	function getTournament(uint _tournamentId) external view returns (Match[] memory) {
-		require(tournament[_tournamentId].length > 0, "No tournamenet found for this ID");
+	function getTournament(uint64 _tournamentId) external view returns (Match[] memory) {
+		require(tournament[_tournamentId].length > 0, string(abi.encodePacked("No tournament found for this ID: ", Strings.toString(_tournamentId))));
 
 		Match[] memory tournamentMatchs = new Match[](tournament[_tournamentId].length);
 		for(uint i = 0; i < tournament[_tournamentId].length; i++) {
 			tournamentMatchs[i]= match_map[tournament[_tournamentId][i]];
 		}
-
 		return (tournamentMatchs);
 	}
 
-	function getPlayerMatchs(string memory _playerName) external view returns (Match[] memory) {
-		require(playerMatch[_playerName].length > 0, "No match found for this player");
+	function getPlayerMatchs(uint64 _playerName) external view returns (Match[] memory) {
+		require(playerMatch[_playerName].length > 0, string(abi.encodePacked("No match found for this PlayerID: ", Strings.toString(_playerName))));
 
 		Match[] memory playerNameMatchs = new Match[](playerMatch[_playerName].length);
 		for(uint i = 0; i < playerMatch[_playerName].length; i++) {
@@ -59,8 +61,8 @@ contract storeScore is Ownable(msg.sender) {
 		return (playerNameMatchs);
 	}
 
-	function getMatchById(uint _r_matchId) external view returns (Match memory) {
-		require(match_map[_r_matchId].matchId != 0, "This match doesn't exist");
+	function getMatchById(uint64 _r_matchId) external view returns (Match memory) {
+		require(match_map[_r_matchId].matchId != 0, string(abi.encodePacked("No match found for this ID: ", Strings.toString(_r_matchId))));
 
 		return (match_map[_r_matchId]);
 	}
