@@ -10,6 +10,7 @@ contract storeScore is Ownable(msg.sender) {
 
 	struct Match {
 		uint64 matchId;
+		uint64 tournamentId;
 		uint64 timestamp;
 		uint64 player1Id;
 		uint64 player2Id;
@@ -32,7 +33,7 @@ contract storeScore is Ownable(msg.sender) {
 	function addMatch(uint64 _r_matchId, uint64 _tournamentId, uint64 _timestamp, uint8 _player1Score, uint8 _player2Score, uint64 _player1Id, uint64 _player2Id, uint64 _winner) public onlyOwner {
 		require(match_map[_r_matchId].matchId == 0, string(abi.encodePacked("This match already exists: ", Strings.toString(_r_matchId))));
 		
-		Match memory newMatch = Match(_r_matchId, _timestamp, _player1Id, _player2Id, _winner, _player1Score, _player2Score);
+		Match memory newMatch = Match(_r_matchId, _tournamentId, _timestamp, _player1Id, _player2Id, _winner, _player1Score, _player2Score);
 		match_map[_r_matchId] = newMatch;
 		playerMatch[_player1Id].push(_r_matchId);
 		playerMatch[_player2Id].push(_r_matchId);
@@ -50,12 +51,12 @@ contract storeScore is Ownable(msg.sender) {
 		return (tournamentMatchs);
 	}
 
-	function getPlayerMatchs(uint64 _playerName) external view returns (Match[] memory) {
-		require(playerMatch[_playerName].length > 0, string(abi.encodePacked("No match found for this PlayerID: ", Strings.toString(_playerName))));
+	function getPlayerMatchs(uint64 _playerId) external view returns (Match[] memory) {
+		require(playerMatch[_playerId].length > 0, string(abi.encodePacked("No match found for this PlayerID: ", Strings.toString(_playerId))));
 
-		Match[] memory playerNameMatchs = new Match[](playerMatch[_playerName].length);
-		for(uint i = 0; i < playerMatch[_playerName].length; i++) {
-			playerNameMatchs[i] = match_map[playerMatch[_playerName][i]];
+		Match[] memory playerNameMatchs = new Match[](playerMatch[_playerId].length);
+		for(uint i = 0; i < playerMatch[_playerId].length; i++) {
+			playerNameMatchs[i] = match_map[playerMatch[_playerId][i]];
 		}
 
 		return (playerNameMatchs);
